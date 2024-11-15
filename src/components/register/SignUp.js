@@ -1,6 +1,6 @@
-import React, { useState, useRef, useContext } from "react";
-import validator from "validator";
+import React, { useContext, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import validator from "validator";
 
 import Context from "../../context";
 
@@ -41,13 +41,16 @@ const SignUp = ({ toggleModal }) => {
         const createdAccount = { id, fullname, email, about, phone, role };
         uiService.showLoading();
         await firebaseService.createAccount(email, password);
-        await firebaseService.upload({
-          key: "users",
-          id,
-          payload: avatar,
-          entity: createdAccount,
-          callback: onAvatarUploaded,
-        });
+        // await firebaseService.upload({
+        //   key: "users",
+        //   id,
+        //   payload: avatar,
+        //   entity: createdAccount,
+        //   callback: onAvatarUploaded,
+        // });
+        let url = "https://i.postimg.cc/5NCrc0rP/Avatar-pool.jpg";
+        await onAvatarUploaded(createdAccount,url);
+
         uiService.hideLoading();
         uiService.alert(
           `${email} was created successfully! Please sign in with your created account`
@@ -60,7 +63,9 @@ const SignUp = ({ toggleModal }) => {
   };
 
   const onAvatarUploaded = async (entity, url) => {
-    entity.image = url;
+    console.log("inside onAvatarUpload");
+    url = "https://i.postimg.cc/5NCrc0rP/Avatar-pool.jpg";
+    // entity.image = url;
     await firebaseService.insert({
       key: "users",
       id: entity.id,

@@ -9,7 +9,33 @@ import Context from "../../context";
 
 import * as cometChatService from "../../services/cometchat";
 import * as firebaseService from "../../services/firebase";
+import "firebase/database";
+import firebase from "firebase/app";
 import * as uiService from "../../services/ui";
+
+const database = firebase.database();
+
+
+
+
+function getUserByEmail(email) {
+  return database
+    .ref("users")
+    .orderByChild("email")
+    .equalTo(email)
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const userObject = snapshot.val();
+        const userData = Object.values(userObject)[0];
+      return userData;
+      } else {
+        throw new Error("User not found");
+      }
+    });
+}
+
+
 
 const Login = ({ toggleModal }) => {
   const { cometChat, setUser } = useContext(Context);
@@ -32,13 +58,24 @@ const Login = ({ toggleModal }) => {
     try {
       uiService.showLoading();
       const { email, password } = getInputs();
+
       if (isUserCredentialsValid(email, password)) {
+
         await firebaseService.login(email, password);
-        const user = await firebaseService.getSingleDataWithQuery({
-          key: "users",
-          query: "email",
-          criteria: email,
-        });
+
+        console.log("above it");
+        // const user = await firebaseService.getSingleDataWithQuery({
+        //   key: "users",
+        //   query: "email",
+        //   criteria: email,
+        // });
+
+        var user = await getUserByEmail(email);
+
+        console.log(email);
+        console.log(user);
+
+
         await cometChatService.login(cometChat, user);
         saveAuthedInfo(user);
         uiService.hideLoading();
